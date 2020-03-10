@@ -1,1 +1,3 @@
-Mnemonic,BinaryOp,LENGTH
+PsuedoOp,Dunction address
+EQU,?
+DB,?
