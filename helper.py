@@ -9,10 +9,12 @@ def readfile(filename):
         data = []
 
         #first line is headers
-        headers = lines[0].split(',')
-        
+        headers = lines[0].strip()
+        headers = headers.split(',')
+
         for line in lines[1:]:
-            temp = line.split(',')
-            data.append( { headers[i]: temp[i] for i in len(headers) } )
+            line1 = line.strip()
+            temp = line1.split(',')
+            data.append( { headers[i]: temp[i] for i in range(len(headers)) } )
 
         return data
