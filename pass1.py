@@ -1,27 +1,65 @@
-from helper import *
+import helper
 import pprint as pr
+import os.path
+from sys import exit
 
-MOT = readfile("MOT.txt")
-POT = readfile("POT.txt")
-ST_headers = ["Symbol","Value","Length","Relocation"]
-ST=[]
-# print(POT[0].keys())
-# pr.pprint(MOT)
-# pr.pprint(POT)
+def check_RR_instr(instr,MOT):
+	'''
+	INPUT : SINGLE LINE OF INSTR and MOT
+	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Reg INSTR Otherwise False
+	'''
+	return instr in [ entry["Mnemonic"] for entry in MOT]
+		
+def check_RI_instr(instr,MOT):
+	'''
+	INPUT : SINGLE LINE OF INSTR and MOT
+	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Immediate INSTR Otherwise False
+	'''
+	# CREATE A LIST OF IMMEDIATE INSTRUCTIONS (format = 02)
+	list_of_RI_instr = []
+	for entry in MOT: 
+		if entry['Format'] == '02': list_of_RI_instr.append(entry)
 
-if os.path.exists("sourcecode.txt"):
+	for entry in list_of_RI_instr:
+		if entry['Mnemonic'][:-3] in instr: return True
+	return False
+			
+
+def assembler_pass1(filename):
+	'''
+	PERFORMS PASS1 OF ASSEMEBLER ON 'filename' which is the src code
+	Generates ST.txt files
+	'''
+	MOT = helper.readfile("MOT.txt")
+	POT = helper.readfile("POT.txt")
+	ST_headers = ["Symbol","Value","Length","Relocation"]
+	ST=[]                        #ST - Symbol Table
+
+	# print(POT[0].keys())
+	# pr.pprint(MOT)
+	# pr.pprint(POT)
+
+	if not os.path.exists(filename): 
+		print('File Not Found')
+		exit()
+	
+
 	f = open("sourcecode.txt","r")
 	lines = f.readlines()
+
 	for instr in lines:
-		instr = instr.strip()
+		instr = instr.strip().upper()
 		#words = instr.split(" ")
 		
-		if instr in [ entry["Mnemonic"] for entry in MOT]:
-			print("MOT")
+		if check_RR_instr(instr,MOT):
+			print("MOT RR instr")
+		elif check_RI_instr(instr,MOT):
+			print("MOT RI instr")
+			 	
 		else:
 			words = instr.split(" ")
 			if words[0] in [ entry["PsuedoOp"] for entry in POT ]:
-				print("POT")
+				print("POT instr")
 
 			if words[0]=="DC":
 				symbol,value=words[1].split(",")
@@ -34,5 +72,7 @@ if os.path.exists("sourcecode.txt"):
 	f.write(":".join(ST_headers) + "\n")		
 	for S in ST:
 		f.write(S["Symbol"]+":"+S["Value"]+":"+S["Length"] + ":" + S["Relocation"] +"\n")
-			
 	pr.pprint(ST)
+
+if __name__ == '__main__':
+	assembler_pass1('sourcecode.txt')

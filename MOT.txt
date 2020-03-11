@@ -1,4 +1,4 @@
-Mnemonic;BinaryOp;LENGTH;Format
+Mnemonic;BinaryOp;Length;Format
 MOV A,B;0;01;01
 MOV A,C;1;01;01
 MOV B,A;2;01;01
