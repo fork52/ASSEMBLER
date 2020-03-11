@@ -8,8 +8,11 @@ def check_RR_instr(instr,MOT):
 	INPUT : SINGLE LINE OF INSTR and MOT
 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Reg INSTR Otherwise False
 	'''
-	return instr in [ entry["Mnemonic"] for entry in MOT]
-		
+	list_of_RR_instr = []
+	for entry in MOT:
+		if entry['Format'] == '02': list_of_RR_instr.append(entry)
+	return instr in list_of_RR_instr
+
 def check_RI_instr(instr,MOT):
 	'''
 	INPUT : SINGLE LINE OF INSTR and MOT
@@ -40,12 +43,13 @@ def assembler_pass1(filename):
 	# pr.pprint(POT)
 
 	if not os.path.exists(filename): 
-		print('File Not Found')
+		print('File Not Found...')
 		exit()
 	
-
-	f = open("sourcecode.txt","r")
-	lines = f.readlines()
+	# Ignore all the whitespaces in the src code
+	with open(filename, "r") as f:
+		lines = [line.strip() for line in f if line.strip() ]
+	print(lines)
 
 	for instr in lines:
 		instr = instr.strip().upper()

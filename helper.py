@@ -21,3 +21,5 @@ def readfile(filename):
 
 if __name__ == '__main__':
     pr.pprint(readfile('MOT.txt'))
+    print('\n\n\n')
+    pr.pprint(readfile('POT.txt'))
