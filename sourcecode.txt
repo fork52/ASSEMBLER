@@ -1,14 +1,8 @@
-
-
-START
-t1 EQU 30H
+START    
 MOV A,B
 MOV B,A
 ADD A,B
 MOV C,A
-
 MOV C,45H
 DC FOUR,4H
-
-
 END

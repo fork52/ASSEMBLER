@@ -3,14 +3,18 @@ import pprint as pr
 import os.path
 from sys import exit
 
+#TODO : ADD LOGIC OF LOCATION COUNTER
+#TODO : GENERATE A LIST OF UNDEFINED SYMBOLS
+
+
 def check_RR_instr(instr,MOT):
 	'''
 	INPUT : SINGLE LINE OF INSTR and MOT
 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Reg INSTR Otherwise False
 	'''
-	list_of_RR_instr = []
-	for entry in MOT:
-		if entry['Format'] == '02': list_of_RR_instr.append(entry)
+	# CREATE A LIST OF RR INSTRUCTIONS (format = 01)
+
+	list_of_RR_instr =  [entry['Mnemonic'] for entry in MOT if entry['Format']=='01']
 	return instr in list_of_RR_instr
 
 def check_RI_instr(instr,MOT):
@@ -19,12 +23,9 @@ def check_RI_instr(instr,MOT):
 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Immediate INSTR Otherwise False
 	'''
 	# CREATE A LIST OF IMMEDIATE INSTRUCTIONS (format = 02)
-	list_of_RI_instr = []
-	for entry in MOT: 
-		if entry['Format'] == '02': list_of_RI_instr.append(entry)
-
+	list_of_RI_instr =  [ entry['Mnemonic'] for entry in MOT if entry['Format']=='02']
 	for entry in list_of_RI_instr:
-		if entry['Mnemonic'][:-3] in instr: return True
+		if entry[:-3] in instr: return True
 	return False
 			
 
@@ -51,7 +52,16 @@ def assembler_pass1(filename):
 		lines = [line.strip() for line in f if line.strip() ]
 	print(lines)
 
+	# CHECK FOR START AND END IN THE BEGINNING AND END OF THE src code
+	if lines[0] != 'START': print('START DIRECTIVE MISSING..') 
+	if lines[-1] !='END'  : print('END DIRECTIVE MISSING..') 
+
+	# REMOVE START AND END FROM THE LIST
+	lines = lines[1:-1]
+	print(lines)
+
 	for instr in lines:
+		print(instr,'  ',end='')
 		instr = instr.strip().upper()
 		#words = instr.split(" ")
 		
