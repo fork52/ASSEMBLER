@@ -1,1 +1,3 @@
-Symbol,Value,Length,Relocation
+Symbol:Value:Length:Relocation
+t1:30H:4:R
+FOUR:4H:4:R

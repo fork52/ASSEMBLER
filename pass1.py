@@ -5,9 +5,9 @@ MOT = readfile("MOT.txt")
 POT = readfile("POT.txt")
 ST_headers = ["Symbol","Value","Length","Relocation"]
 ST=[]
-print(POT[0].keys())
-pr.pprint(MOT)
-pr.pprint(POT)
+# print(POT[0].keys())
+# pr.pprint(MOT)
+# pr.pprint(POT)
 
 if os.path.exists("sourcecode.txt"):
 	f = open("sourcecode.txt","r")
@@ -22,6 +22,7 @@ if os.path.exists("sourcecode.txt"):
 			words = instr.split(" ")
 			if words[0] in [ entry["PsuedoOp"] for entry in POT ]:
 				print("POT")
+
 			if words[0]=="DC":
 				symbol,value=words[1].split(",")
 				ST.append({"Symbol":symbol,"Value":value,"Length":"4","Relocation":"R"})    										

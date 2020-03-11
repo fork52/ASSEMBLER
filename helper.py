@@ -19,3 +19,5 @@ def readfile(filename):
 
         return data
 
+if __name__ == '__main__':
+    pr.pprint(readfile('MOT.txt'))
