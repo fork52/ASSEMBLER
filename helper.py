@@ -1,4 +1,5 @@
 import os
+import pprint as pr
 
 def readfile(filename):
     ''' reads the file and returns it as list of dictionaries'''
@@ -9,11 +10,12 @@ def readfile(filename):
 
         #first line is headers
         headers = lines[0].strip()
-        headers = headers.split(':')
+        headers = headers.split(';')
 
         for line in lines[1:]:
             line1 = line.strip()
-            temp = line1.split(':')
+            temp = line1.split(';')
             data.append( { headers[i]: temp[i] for i in range(len(headers)) } )
 
         return data
+
