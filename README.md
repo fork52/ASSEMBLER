@@ -1,4 +1,4 @@
-2 Pass assembler by Mrunank and Omkar.
+2 Pass assembler by Mrunank(fork52) and Omkar(Omkar-C).
 
 INSTRUCTION FORMAT
 _____________________________
