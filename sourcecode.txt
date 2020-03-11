@@ -1,4 +1,5 @@
 START    
+t1 EQU 30H
 MOV A,B
 MOV B,A
 ADD A,B

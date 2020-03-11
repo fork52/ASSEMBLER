@@ -4,7 +4,8 @@ import os.path
 from sys import exit
 
 #TODO : ADD LOGIC OF LOCATION COUNTER
-#TODO : GENERATE A LIST OF UNDEFINED SYMBOLS
+#TODO : GENERATE A LIST OF UNDEFINED SYMBOLS TO BE SEARCHED IN PASS2
+#TODO : CREATION OF RELATIVE ADDRESS W.R.T location counter
 
 
 def check_RR_instr(instr,MOT):
@@ -50,7 +51,7 @@ def assembler_pass1(filename):
 	# Ignore all the whitespaces in the src code
 	with open(filename, "r") as f:
 		lines = [line.strip() for line in f if line.strip() ]
-	print(lines)
+	# print(lines)
 
 	# CHECK FOR START AND END IN THE BEGINNING AND END OF THE src code
 	if lines[0] != 'START': print('START DIRECTIVE MISSING..') 
@@ -58,7 +59,7 @@ def assembler_pass1(filename):
 
 	# REMOVE START AND END FROM THE LIST
 	lines = lines[1:-1]
-	print(lines)
+	# print(lines)
 
 	for instr in lines:
 		print(instr,'  ',end='')
@@ -70,7 +71,7 @@ def assembler_pass1(filename):
 		elif check_RI_instr(instr,MOT):
 			print("MOT RI instr")
 			 	
-		else:
+		else: #CASE WHEN WE HAVE DC OR EQU
 			words = instr.split(" ")
 			if words[0] in [ entry["PsuedoOp"] for entry in POT ]:
 				print("POT instr")
@@ -86,6 +87,7 @@ def assembler_pass1(filename):
 	f.write(":".join(ST_headers) + "\n")		
 	for S in ST:
 		f.write(S["Symbol"]+":"+S["Value"]+":"+S["Length"] + ":" + S["Relocation"] +"\n")
+	print()
 	pr.pprint(ST)
 
 if __name__ == '__main__':
