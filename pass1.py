@@ -7,6 +7,8 @@ from sys import exit
 #TODO : GENERATE A LIST OF UNDEFINED SYMBOLS TO BE SEARCHED IN PASS2
 #TODO : CREATION OF RELATIVE ADDRESS W.R.T location counter
 
+keywords = [i for i in 'ABCDEF']
+keywords += ['ADD','MUL','SUB', 'MOV', 'START', 'END', 'DC', 'EQU', ]
 
 def check_RR_instr(instr,MOT):
 	'''
@@ -25,7 +27,7 @@ def check_RI_instr(instr,MOT):
 	'''
 	# CREATE A LIST OF IMMEDIATE INSTRUCTIONS (format = 02)
 	hex_no = re.compile('[a-fA-F0-9][a-fA-F0-9][hH]')
-	list_of_RI_instr =  [ entry['Mnemonic'] for entry in MOT if entry['Format']=='02']
+	list_of_RI_instr =  [ entry['Mnemonic'] for entry in MOT if entry['Format']=='03']
 	try:
 		for entry in list_of_RI_instr:
 			if entry[:entry.index(',')] in instr:
@@ -33,6 +35,30 @@ def check_RI_instr(instr,MOT):
 					return True
 	except: pass
 	return False
+
+def check_RI_mem(instr,MOT):
+	'''
+	INPUT : SINGLE LINE OF INSTR and MOT
+	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Memory INSTR Otherwise False
+	'''
+
+	list_of_RM_instr = [ entry for entry in MOT if entry['Format']=='02']
+	try:
+		words = instr.split(",")
+		reg = "A"
+		if words[0][-1]=="A":
+			reg = "B"
+		if check_RR_instr(words[0]+","+reg, MOT):
+			if words[1] not in keywords:
+				for i in list_of_RM_instr:
+					if i['Mnemonic'].split(",")[0] == words[0]:
+						return i
+				return
+			return False
+		else:
+			return False
+	except:
+		return False
 			
 
 def assembler_pass1(filename):
@@ -84,6 +110,9 @@ def assembler_pass1(filename):
 			locations.append(tuple( [locations[-1][0] + 2]))
 		elif check_RI_instr(instr,MOT):
 			print("MOT RI instr")
+			locations.append(tuple([locations[-1][0] + 4]))
+		elif check_RI_mem(instr, MOT):
+			print("MOT RM instr")
 			locations.append(tuple([locations[-1][0] + 4]))
 			 	
 		else: #CASE WHEN WE HAVE DC OR EQU
