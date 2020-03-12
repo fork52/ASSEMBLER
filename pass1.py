@@ -45,6 +45,9 @@ def assembler_pass1(filename):
 	ST_headers = ["Symbol","Value","Length","Relocation"]
 	ST=[]                        #ST - Symbol Table
 
+	# 01 = 2 bytes, 10 = 4 bytes, 11 = 6 bytes
+	locations = [] 					#Location counter
+
 	# print(POT[0].keys())
 	# pr.pprint(MOT)
 	# pr.pprint(POT)
@@ -62,30 +65,42 @@ def assembler_pass1(filename):
 	if lines[0] != 'START': print('START DIRECTIVE MISSING..') 
 	if lines[-1] !='END'  : print('END DIRECTIVE MISSING..') 
 
+	# Add start address,
+	locations.append(tuple([2]))
+
 	# REMOVE START AND END FROM THE LIST
 	lines = lines[1:-1]
 	# print(lines)
 
+	loccounter = 0
 	for instr in lines:
-		print(instr,'  ',end='')
+		print(instr,locations[loccounter],end = '  ',sep='  ')
 		instr = instr.strip().upper()
+		loccounter+=1
 		#words = instr.split(" ")
 		
 		if check_RR_instr(instr,MOT):
 			print("MOT RR instr")
+			locations.append(tuple( [locations[-1][0] + 2]))
 		elif check_RI_instr(instr,MOT):
 			print("MOT RI instr")
+			locations.append(tuple([locations[-1][0] + 4]))
 			 	
 		else: #CASE WHEN WE HAVE DC OR EQU
 			words = instr.split(" ")
 			if words[0] in [ entry["PsuedoOp"] for entry in POT ]:
+				locations.append(tuple([locations[-1][0] + 4]))
 				print("POT instr")
 
-			if words[0]=="DC":
+			elif words[0]=="DC":
 				symbol,value=words[1].split(",")
-				ST.append({"Symbol":symbol,"Value":value,"Length":"4","Relocation":"R"})    										
+				ST.append({"Symbol":symbol,"Value":value,"Length":"4","Relocation":"R"})
+				locations.append(tuple([locations[-1][0] + 6]))
+				print("DC instructions")
 			else :
-				ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"R"})    		
+				ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"R"})
+				locations.append(tuple([locations[-1][0] + 6]))
+				print("EQU instructions")
 				
 	f.close()
 	f = open("ST.txt","w")
@@ -93,7 +108,6 @@ def assembler_pass1(filename):
 	for S in ST:
 		f.write(S["Symbol"]+":"+S["Value"]+":"+S["Length"] + ":" + S["Relocation"] +"\n")
 	print()
-	pr.pprint(ST)
 
 if __name__ == '__main__':
 	assembler_pass1('sourcecode.txt')
