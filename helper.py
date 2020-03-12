@@ -13,6 +13,7 @@ def readfile(filename):
         headers = headers.split(';')
 
         for line in lines[1:]:
+            # pr.pprint(data)
             line1 = line.strip()
             temp = line1.split(';')
             data.append( { headers[i]: temp[i] for i in range(len(headers)) } )
