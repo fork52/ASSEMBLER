@@ -32,6 +32,7 @@ def check_RI_instr(instr,MOT):
 				if hex_no.search(instr[instr.index(',')+1:]):
 					return True
 	except: pass
+
 	return False
 			
 
@@ -95,13 +96,14 @@ def assembler_pass1(filename):
 			elif words[0]=="DC":
 				symbol,value=words[1].split(",")
 				ST.append({"Symbol":symbol,"Value":value,"Length":"4","Relocation":"R"})
-				locations.append(tuple([locations[-1][0] + 6]))
+				locations.append(tuple([locations[-1][0] + 4]))
 				print("DC instructions")
 			else :
 				ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"R"})
-				locations.append(tuple([locations[-1][0] + 6]))
+				locations.append(tuple([locations[-1][0] + 4]))
 				print("EQU instructions")
-				
+
+	print(locations)			
 	f.close()
 	f = open("ST.txt","w")
 	f.write(":".join(ST_headers) + "\n")		
