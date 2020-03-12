@@ -5,4 +5,5 @@ _____________________________
 00-IMPLICIT
 01-REGISTER REGISTER
 02-IMMEDIATE
+03-Register Memory
 
