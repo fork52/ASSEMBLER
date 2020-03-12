@@ -1,4 +1,4 @@
-import helper
+import helper,re
 import pprint as pr
 import os.path
 from sys import exit
@@ -24,9 +24,14 @@ def check_RI_instr(instr,MOT):
 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Immediate INSTR Otherwise False
 	'''
 	# CREATE A LIST OF IMMEDIATE INSTRUCTIONS (format = 02)
+	hex_no = re.compile('[a-fA-F0-9][a-fA-F0-9][hH]')
 	list_of_RI_instr =  [ entry['Mnemonic'] for entry in MOT if entry['Format']=='02']
-	for entry in list_of_RI_instr:
-		if entry[:-3] in instr: return True
+	try:
+		for entry in list_of_RI_instr:
+			if entry[:entry.index(',')] in instr:
+				if hex_no.search(instr[instr.index(',')+1:]):
+					return True
+	except: pass
 	return False
 			
 
