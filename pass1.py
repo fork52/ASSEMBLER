@@ -84,7 +84,7 @@ def assembler_pass1(filename):
 		else: #CASE WHEN WE HAVE DC OR EQU
 			words = instr.split(" ")
 			if words[0] in [ entry["PsuedoOp"] for entry in POT ]:
-				locations.append(tuple([locations[-1][0] + 4]))
+				locations.append(tuple([locations[-1][0] + 12]))
 				print("POT instr")
 
 			elif words[0]=="DC":
