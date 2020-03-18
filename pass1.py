@@ -12,7 +12,7 @@ from sys import exit
 keywords = [i for i in 'ABCDEF']
 keywords += ['ADD','MUL','SUB', 'MOV', 'START', 'END', 'DC', 'EQU', ]
 
-global MOT, POT ,list_of_RR_instr,list_of_RM_instr,list_of_RI_instr,list_of_POT_instr,instr_list,locations
+global MOT, POT ,list_of_RR_instr,list_of_RM_instr,list_of_RI_instr,list_of_POT_instr,instr_list,locations,ST,ST_headers
 
 MOT = helper.readfile("MOT.txt")
 POT = helper.readfile("POT.txt")
@@ -24,6 +24,8 @@ start_instr = [ entry for entry in MOT if entry['Mnemonic']=='START'][0]
 end_instr = [ entry for entry in MOT if entry['Mnemonic']=='END'] [0]
 instr_list = []
 locations = []
+ST=[]
+ST_headers = ["Symbol","Value","Length","Relocation"]
 
 
 def check_RR_instr(instr,MOT):
@@ -80,8 +82,7 @@ def assembler_pass1(filename):
 	Generates ST.txt files
 	'''
 
-	ST_headers = ["Symbol","Value","Length","Relocation"]
-	ST=[]                        #ST - Symbol Table
+
 
 	# 01 = 2 bytes, 10 = 4 bytes, 11 = 6 bytes
 
@@ -148,12 +149,12 @@ def assembler_pass1(filename):
 		# 	print("POT instr")
 		if words[0]=="DC":
 			symbol,value=words[1].split(",")
-			ST.append({"Symbol":symbol,"Value":value,"Length":"4","Relocation":"R"})
+			ST.append({"Symbol":symbol,"Value":"[{}]".format(value),"Length":"4","Relocation":"R"})
 			locations.append(tuple([locations[-1][0] + 4]))
 			instr_list.append(list_of_POT_instr[1])
 			print("DC instruction")
 		elif words[1]=="EQU" :
-			ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"R"})
+			ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"A"})
 			locations.append(tuple([locations[-1][0] + 4]))
 			instr_list.append(list_of_POT_instr[0])
 			print("EQU instruction")
@@ -174,6 +175,12 @@ def assembler_pass1(filename):
 
 def assembler_pass2(filename):
 
+	with open(filename, "r") as f:
+		lines = [line.strip() for line in f if line.strip()]
+
+	lines = lines[1:-1] #striping start and end
+	counter = 0
+
 	objectcode = open("objectcode.txt", "w")
 	objectcode.write(start_instr["BinaryOp"])
 	objectcode.write("\n")
@@ -184,13 +191,16 @@ def assembler_pass2(filename):
 				objectcode.write(instr["BinaryOp"])
 				objectcode.write("\n")
 			elif instr["Format"]=="02":
-				objectcode.write(instr["BinaryOp"] + "  Value")
+				objectcode.write(instr["BinaryOp"] + " " + lines[counter].split(",")[-1])
 				objectcode.write("\n")
-			else:
-				objectcode.write(instr["BinaryOp"] + "  Memory")
+			elif instr["Format"]=="03":
+				mem = [ i for i in ST if lines[counter].split(",")[-1].upper()==i["Symbol"] ][0]
+				objectcode.write(instr["BinaryOp"] + " " + mem["Value"] )
 				objectcode.write("\n")
 		except:
 			pass
+		finally:
+			counter+=1
 
 	objectcode.write(end_instr["BinaryOp"])
 	objectcode.close()
