@@ -10,16 +10,24 @@ from sys import exit
 keywords = [i for i in 'ABCDEF']
 keywords += ['ADD','MUL','SUB', 'MOV', 'START', 'END', 'DC', 'EQU', ]
 
+global MOT, POT ,list_of_RR_instr,list_of_RM_instr,list_of_RI_instr
+MOT = helper.readfile("MOT.txt")
+POT = helper.readfile("POT.txt")
+list_of_RR_instr =  [entry for entry in MOT if entry['Format']=='01']
+list_of_RM_instr = [ entry for entry in MOT if entry['Format']=='03']
+list_of_RI_instr =  [ entry for entry in MOT if entry['Format']=='02']
+list_of_POT_instr = [ entry for entry in POT ]
+
+
 def check_RR_instr(instr,MOT):
 	'''
 	INPUT : SINGLE LINE OF INSTR and MOT
 	OUTPUT: RETURNS matched-instr IF 'instr' IS A Reg-Reg INSTR Otherwise False
 	'''
 	# CREATE A LIST OF RR INSTRUCTIONS (format = 01)
-	list_of_RR_instr =  [entry for entry in MOT if entry['Format']=='01']
 	for entry in list_of_RR_instr:
-		if entry['Mnemonic'] in instr:   return entry
-		else:							 return False
+		if instr in entry['Mnemonic']:   return entry
+	return False
 
 def check_RI_instr(instr,MOT):
 	'''
@@ -28,21 +36,20 @@ def check_RI_instr(instr,MOT):
 	'''
 	# CREATE A LIST OF IMMEDIATE INSTRUCTIONS (format = 02)
 	hex_no = re.compile('[a-fA-F0-9][a-fA-F0-9][hH]')
-	list_of_RI_instr =  [ entry for entry in MOT if entry['Format']=='03']
 	try:
-		for entry['Mnemonic'] in list_of_RI_instr:
+		for entry in list_of_RI_instr:
 			if entry['Mnemonic'][:entry['Mnemonic'].index(',')] in instr:
 				if hex_no.search(instr[instr.index(',')+1:]):
 					return entry
-	except: pass
-	return False
+		return False
+	except: return False
+	
 
 def check_RI_mem(instr,MOT):
 	'''
 	INPUT : SINGLE LINE OF INSTR and MOT
 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Memory INSTR Otherwise False
 	'''
-	list_of_RM_instr = [ entry for entry in MOT if entry['Format']=='02']
 	try:
 		words = instr.split(",")
 		reg = "A"
@@ -53,7 +60,6 @@ def check_RI_mem(instr,MOT):
 				for i in list_of_RM_instr:
 					if i['Mnemonic'].split(",")[0] == words[0]:
 						return i
-				return
 			return False
 		else:
 			return False
@@ -66,8 +72,7 @@ def assembler_pass1(filename):
 	PERFORMS PASS1 OF ASSEMEBLER ON 'filename' which is the src code
 	Generates ST.txt files
 	'''
-	MOT = helper.readfile("MOT.txt")
-	POT = helper.readfile("POT.txt")
+
 	ST_headers = ["Symbol","Value","Length","Relocation"]
 	ST=[]                        #ST - Symbol Table
 
@@ -91,47 +96,65 @@ def assembler_pass1(filename):
 	if lines[0] != 'START': print('START DIRECTIVE MISSING..') 
 	if lines[-1] !='END'  : print('END DIRECTIVE MISSING..') 
 
-	# Add start address,
+	# Add start address of the program - START instr is 4 bytes
 	locations.append(tuple([2]))
 
 	# REMOVE START AND END FROM THE LIST
 	lines = lines[1:-1]
 	# print(lines)
 
-	loccounter = 0
+	loccounter = 0  # Keep track of relative address
+	instr_list = []
+
+
+	print()
 	for instr in lines:
-		print(instr,locations[loccounter],end = '  ',sep='  ')
+		# print('\nlocations=',locations,'loccounter=',loccounter)
+		print(instr, locations[loccounter], end = '  ', sep='  ')
 		instr = instr.strip().upper()
 		loccounter+=1
-		#words = instr.split(" ")
 		
-		if check_RR_instr(instr,MOT):
+		MOT_entry = check_RR_instr(instr , MOT)
+		if MOT_entry: 
+			instr_list.append(MOT_entry)
+			locations.append( tuple( [locations[-1][0] + 2]) )
 			print("MOT RR instr")
-			locations.append(tuple( [locations[-1][0] + 2]))
-		elif check_RI_instr(instr,MOT):
+			continue
+		
+		MOT_entry = check_RI_instr(instr , MOT)
+		if MOT_entry:
+			instr_list.append(MOT_entry)
+			locations.append(tuple([locations[-1][0] + 4]))
 			print("MOT RI instr")
+			continue
+
+		MOT_entry = check_RI_mem(instr, MOT)
+		if MOT_entry:
+			instr_list.append(MOT_entry)
 			locations.append(tuple([locations[-1][0] + 4]))
-		elif check_RI_mem(instr, MOT):
 			print("MOT RM instr")
-			locations.append(tuple([locations[-1][0] + 4]))
+			continue
 			 	
-		else: #CASE WHEN WE HAVE DC OR EQU
-			words = instr.split(" ")
-			if words[0] in [ entry["PsuedoOp"] for entry in POT ]:
-				locations.append(tuple([locations[-1][0] + 4]))
-				print("POT instr")
+		#CASE WHEN WE HAVE DC OR EQU
+		words = instr.split(" ")
+		# if words[0] in [ entry["PsuedoOp"] for entry in POT ]:
+		# 	locations.append(tuple([locations[-1][0] + 4]))
+		# 	print("POT instr")
+		if words[0]=="DC":
+			symbol,value=words[1].split(",")
+			ST.append({"Symbol":symbol,"Value":value,"Length":"4","Relocation":"R"})
+			locations.append(tuple([locations[-1][0] + 4]))
+			instr_list.append(list_of_POT_instr[1])
+			print("DC instruction")
+		elif words[1]=="EQU" :
+			ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"R"})
+			locations.append(tuple([locations[-1][0] + 4]))
+			instr_list.append(list_of_POT_instr[1])
+			print("EQU instruction")
 
-			elif words[0]=="DC":
-				symbol,value=words[1].split(",")
-				ST.append({"Symbol":symbol,"Value":value,"Length":"4","Relocation":"R"})
-				locations.append(tuple([locations[-1][0] + 4]))
-				print("DC instructions")
-			else :
-				ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"R"})
-				locations.append(tuple([locations[-1][0] + 4]))
-				print("EQU instructions")
-
-	print(locations)			
+	print('\nlocations_list= ' ,locations,'\n\n','LIST OF MATHCED INSTRS')		
+	pr.pprint(instr_list)	
+	
 	f.close()
 	f = open("ST.txt","w")
 	f.write(":".join(ST_headers) + "\n")		
