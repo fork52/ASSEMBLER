@@ -59,22 +59,51 @@ def check_RI_mem(instr,MOT):
 	INPUT : SINGLE LINE OF INSTR and MOT
 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Memory INSTR Otherwise False
 	'''
+	words = instr.split(",")
+	identifier = re.compile(r"^[^\d\W]\w*\Z", re.UNICODE)
 	try:
-		words = instr.split(",")
-		reg = "A"
-		if words[0][-1]=="A":
-			reg = "B"
-		if check_RR_instr(words[0]+","+reg, MOT):
-			if words[1] not in keywords:
-				for i in list_of_RM_instr:
-					if i['Mnemonic'].split(",")[0] == words[0]:
-						return i
-			return False
-		else:
-			return False
-	except:
+		for entry in list_of_RM_instr:
+			if entry['Mnemonic'][:entry['Mnemonic'].index(',')] in instr and words[1] not in keywords:
+				if identifier.search(instr[instr.index(',')+1:]):
+					return entry
 		return False
+	except: return False
+
+# def check_RI_mem(instr,MOT):
+# 	'''
+# 	INPUT : SINGLE LINE OF INSTR and MOT
+# 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Memory INSTR Otherwise False
+# 	'''
+# 	try:
+# 		words = instr.split(",")
+# 		reg = "A"
+# 		if words[0][-1]=="A":
+# 			reg = "B"
+# 		if check_RR_instr(words[0]+","+reg, MOT):
+# 			if words[1] not in keywords:
+# 				for i in list_of_RM_instr:
+# 					if i['Mnemonic'].split(",")[0] == words[0]:
+# 						return i
+# 			return False
+# 		else:
+# 			return False
+# 	except:
+# 		return False
 			
+def to_hex(string):
+	# return string
+
+	n = int(string, 16)
+	bin = ''
+	while n > 0:
+		bin = str(n % 2) + bin
+		n = n >> 1
+
+	while len(bin)<6:
+		bin = '0' + bin
+
+	return bin
+
 
 def assembler_pass1(filename):
 	'''
@@ -149,7 +178,7 @@ def assembler_pass1(filename):
 		# 	print("POT instr")
 		if words[0]=="DC":
 			symbol,value=words[1].split(",")
-			ST.append({"Symbol":symbol,"Value":"[{}]".format(value),"Length":"4","Relocation":"R"})
+			ST.append({"Symbol":symbol,"Value":value, "Length":"4","Relocation":"R"})
 			locations.append(tuple([locations[-1][0] + 4]))
 			instr_list.append(list_of_POT_instr[1])
 			print("DC instruction")
@@ -159,7 +188,7 @@ def assembler_pass1(filename):
 			instr_list.append(list_of_POT_instr[0])
 			print("EQU instruction")
 
-	print('\nlocations_list= ' ,locations,'\n\n','LIST OF MATHCED INSTRS')		
+	print()
 	pr.pprint(instr_list)	
 
 
@@ -182,27 +211,27 @@ def assembler_pass2(filename):
 	counter = 0
 
 	objectcode = open("objectcode.txt", "w")
-	objectcode.write(start_instr["BinaryOp"])
+	objectcode.write(to_hex(start_instr["BinaryOp"]))
 	objectcode.write("\n")
 
 	for instr in instr_list:
 		try:
 			if instr["Format"]=="01":
-				objectcode.write(instr["BinaryOp"])
+				objectcode.write(to_hex(instr["BinaryOp"]))
 				objectcode.write("\n")
 			elif instr["Format"]=="02":
-				objectcode.write(instr["BinaryOp"] + " " + lines[counter].split(",")[-1])
+				objectcode.write(to_hex(instr["BinaryOp"]) + " " + to_hex(lines[counter].split(",")[-1][:-1]) )
 				objectcode.write("\n")
 			elif instr["Format"]=="03":
 				mem = [ i for i in ST if lines[counter].split(",")[-1].upper()==i["Symbol"] ][0]
-				objectcode.write(instr["BinaryOp"] + " " + mem["Value"] )
+				objectcode.write(to_hex(instr["BinaryOp"]) + " " + to_hex(mem["Value"][:-1]) )
 				objectcode.write("\n")
-		except:
-			pass
+		except Exception as e:
+			print(e)
 		finally:
 			counter+=1
 
-	objectcode.write(end_instr["BinaryOp"])
+	objectcode.write(to_hex(end_instr["BinaryOp"]))
 	objectcode.close()
 
 
