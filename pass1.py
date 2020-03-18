@@ -12,7 +12,7 @@ from sys import exit
 keywords = [i for i in 'ABCDEF']
 keywords += ['ADD','MUL','SUB', 'MOV', 'START', 'END', 'DC', 'EQU', ]
 
-global MOT, POT ,list_of_RR_instr,list_of_RM_instr,list_of_RI_instr,list_of_POT_instr
+global MOT, POT ,list_of_RR_instr,list_of_RM_instr,list_of_RI_instr,list_of_POT_instr,instr_list,locations
 
 MOT = helper.readfile("MOT.txt")
 POT = helper.readfile("POT.txt")
@@ -20,8 +20,10 @@ list_of_RR_instr =  [entry for entry in MOT if entry['Format']=='01']
 list_of_RM_instr = [ entry for entry in MOT if entry['Format']=='03']
 list_of_RI_instr =  [ entry for entry in MOT if entry['Format']=='02']
 list_of_POT_instr = [ entry for entry in POT ]
-start_instr = [ entry for entry in MOT if entry['Mnemonic']=='START'] 
-end_instr = [ entry for entry in MOT if entry['Mnemonic']=='END'] 
+start_instr = [ entry for entry in MOT if entry['Mnemonic']=='START'][0]
+end_instr = [ entry for entry in MOT if entry['Mnemonic']=='END'] [0]
+instr_list = []
+locations = []
 
 
 def check_RR_instr(instr,MOT):
@@ -82,7 +84,6 @@ def assembler_pass1(filename):
 	ST=[]                        #ST - Symbol Table
 
 	# 01 = 2 bytes, 10 = 4 bytes, 11 = 6 bytes
-	locations = [] 					#Location counter
 
 	# print(POT[0].keys())
 	# pr.pprint(MOT)
@@ -109,7 +110,7 @@ def assembler_pass1(filename):
 	# print(lines)
 
 	loccounter = 0  # Keep track of relative address
-	instr_list = []
+
 
 
 	print()
@@ -154,7 +155,7 @@ def assembler_pass1(filename):
 		elif words[1]=="EQU" :
 			ST.append({"Symbol":words[0],"Value":words[2],"Length":"4","Relocation":"R"})
 			locations.append(tuple([locations[-1][0] + 4]))
-			instr_list.append(list_of_POT_instr[1])
+			instr_list.append(list_of_POT_instr[0])
 			print("EQU instruction")
 
 	print('\nlocations_list= ' ,locations,'\n\n','LIST OF MATHCED INSTRS')		
@@ -168,5 +169,23 @@ def assembler_pass1(filename):
 		f.write(S["Symbol"]+":"+S["Value"]+":"+S["Length"] + ":" + S["Relocation"] +"\n")
 	print()
 
+def assembler_pass2(filename):
+
+	objectcode = open("objectcode.txt", "w")
+	objectcode.write(start_instr["BinaryOp"])
+	objectcode.write("\n")
+
+	for instr in instr_list:
+		try:
+			objectcode.write(instr["BinaryOp"])
+			objectcode.write("\n")
+		except:
+			pass
+
+	objectcode.write(end_instr["BinaryOp"])
+	objectcode.close()
+
+
 if __name__ == '__main__':
 	assembler_pass1('sourcecode.txt')
+	assembler_pass2('sourcecode.txt')
