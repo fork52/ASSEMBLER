@@ -3,6 +3,8 @@ import pprint as pr
 import os.path
 from sys import exit
 
+
+
 #TODO : ADD LOGIC OF LOCATION COUNTER
 #TODO : GENERATE A LIST OF UNDEFINED SYMBOLS TO BE SEARCHED IN PASS2
 #TODO : CREATION OF RELATIVE ADDRESS W.R.T location counter
@@ -18,6 +20,8 @@ list_of_RR_instr =  [entry for entry in MOT if entry['Format']=='01']
 list_of_RM_instr = [ entry for entry in MOT if entry['Format']=='03']
 list_of_RI_instr =  [ entry for entry in MOT if entry['Format']=='02']
 list_of_POT_instr = [ entry for entry in POT ]
+start_instr = [ entry for entry in MOT if entry['Mnemonic']=='START'] 
+end_instr = [ entry for entry in MOT if entry['Mnemonic']=='END'] 
 
 
 def check_RR_instr(instr,MOT):
@@ -94,8 +98,8 @@ def assembler_pass1(filename):
 	# print(lines)
 
 	# CHECK FOR START AND END IN THE BEGINNING AND END OF THE src code
-	if lines[0] != 'START': print('START DIRECTIVE MISSING..') 
-	if lines[-1] !='END'  : print('END DIRECTIVE MISSING..') 
+	if lines[0] != 'START': print('START DIRECTIVE MISSING..'); exit()
+	if lines[-1] !='END'  : print('END DIRECTIVE MISSING..') ; exit()
 
 	# Add start address of the program - START instr is 4 bytes
 	locations.append(tuple([2]))
@@ -155,6 +159,7 @@ def assembler_pass1(filename):
 
 	print('\nlocations_list= ' ,locations,'\n\n','LIST OF MATHCED INSTRS')		
 	pr.pprint(instr_list)	
+
 
 	f.close()
 	f = open("ST.txt","w")
