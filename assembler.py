@@ -3,8 +3,6 @@ import pprint as pr
 import os.path
 from sys import exit
 
-
-
 #TODO : ADD LOGIC OF LOCATION COUNTER
 #TODO : GENERATE A LIST OF UNDEFINED SYMBOLS TO BE SEARCHED IN PASS2
 #TODO : CREATION OF RELATIVE ADDRESS W.R.T location counter
@@ -92,16 +90,13 @@ def check_RI_mem(instr,MOT):
 			
 def to_hex(string):
 	# return string
-
 	n = int(string, 16)
 	bin = ''
 	while n > 0:
 		bin = str(n % 2) + bin
 		n = n >> 1
-
 	while len(bin)<6:
 		bin = '0' + bin
-
 	return bin
 
 
@@ -110,9 +105,6 @@ def assembler_pass1(filename):
 	PERFORMS PASS1 OF ASSEMEBLER ON 'filename' which is the src code
 	Generates ST.txt files
 	'''
-
-
-
 	# 01 = 2 bytes, 10 = 4 bytes, 11 = 6 bytes
 
 	# print(POT[0].keys())
@@ -140,8 +132,6 @@ def assembler_pass1(filename):
 	# print(lines)
 
 	loccounter = 0  # Keep track of relative address
-
-
 
 	print()
 	for instr in lines:
@@ -198,9 +188,7 @@ def assembler_pass1(filename):
 	for S in ST:
 		f.write(S["Symbol"]+":"+S["Value"]+":"+S["Length"] + ":" + S["Relocation"] +"\n")
 	print()
-
 	pr.pprint(ST)
-
 
 def assembler_pass2(filename):
 
@@ -230,10 +218,8 @@ def assembler_pass2(filename):
 			print(e)
 		finally:
 			counter+=1
-
 	objectcode.write(to_hex(end_instr["BinaryOp"]))
 	objectcode.close()
-
 
 if __name__ == '__main__':
 	assembler_pass1('sourcecode.txt')
