@@ -169,6 +169,9 @@ def assembler_pass1(filename):
 		f.write(S["Symbol"]+":"+S["Value"]+":"+S["Length"] + ":" + S["Relocation"] +"\n")
 	print()
 
+	pr.pprint(ST)
+
+
 def assembler_pass2(filename):
 
 	objectcode = open("objectcode.txt", "w")
@@ -177,8 +180,15 @@ def assembler_pass2(filename):
 
 	for instr in instr_list:
 		try:
-			objectcode.write(instr["BinaryOp"])
-			objectcode.write("\n")
+			if instr["Format"]=="01":
+				objectcode.write(instr["BinaryOp"])
+				objectcode.write("\n")
+			elif instr["Format"]=="02":
+				objectcode.write(instr["BinaryOp"] + "  Value")
+				objectcode.write("\n")
+			else:
+				objectcode.write(instr["BinaryOp"] + "  Memory")
+				objectcode.write("\n")
 		except:
 			pass
 
