@@ -10,7 +10,8 @@ from sys import exit
 keywords = [i for i in 'ABCDEF']
 keywords += ['ADD','MUL','SUB', 'MOV', 'START', 'END', 'DC', 'EQU', ]
 
-global MOT, POT ,list_of_RR_instr,list_of_RM_instr,list_of_RI_instr
+global MOT, POT ,list_of_RR_instr,list_of_RM_instr,list_of_RI_instr,list_of_POT_instr
+
 MOT = helper.readfile("MOT.txt")
 POT = helper.readfile("POT.txt")
 list_of_RR_instr =  [entry for entry in MOT if entry['Format']=='01']
@@ -154,7 +155,7 @@ def assembler_pass1(filename):
 
 	print('\nlocations_list= ' ,locations,'\n\n','LIST OF MATHCED INSTRS')		
 	pr.pprint(instr_list)	
-	
+
 	f.close()
 	f = open("ST.txt","w")
 	f.write(":".join(ST_headers) + "\n")		
