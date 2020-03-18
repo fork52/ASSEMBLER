@@ -13,28 +13,28 @@ keywords += ['ADD','MUL','SUB', 'MOV', 'START', 'END', 'DC', 'EQU', ]
 def check_RR_instr(instr,MOT):
 	'''
 	INPUT : SINGLE LINE OF INSTR and MOT
-	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Reg INSTR Otherwise False
+	OUTPUT: RETURNS matched-instr IF 'instr' IS A Reg-Reg INSTR Otherwise False
 	'''
 	# CREATE A LIST OF RR INSTRUCTIONS (format = 01)
-
-	list_of_RR_instr =  [entry['Mnemonic'] for entry in MOT if entry['Format']=='01']
-	return instr in list_of_RR_instr
+	list_of_RR_instr =  [entry for entry in MOT if entry['Format']=='01']
+	for entry in list_of_RR_instr:
+		if entry['Mnemonic'] in instr:   return entry
+		else:							 return False
 
 def check_RI_instr(instr,MOT):
 	'''
 	INPUT : SINGLE LINE OF INSTR and MOT
-	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Immediate INSTR Otherwise False
+	OUTPUT: RETURNS matched-instr IF 'instr' IS A Reg-Immediate INSTR Otherwise False
 	'''
 	# CREATE A LIST OF IMMEDIATE INSTRUCTIONS (format = 02)
 	hex_no = re.compile('[a-fA-F0-9][a-fA-F0-9][hH]')
-	list_of_RI_instr =  [ entry['Mnemonic'] for entry in MOT if entry['Format']=='03']
+	list_of_RI_instr =  [ entry for entry in MOT if entry['Format']=='03']
 	try:
-		for entry in list_of_RI_instr:
-			if entry[:entry.index(',')] in instr:
+		for entry['Mnemonic'] in list_of_RI_instr:
+			if entry['Mnemonic'][:entry['Mnemonic'].index(',')] in instr:
 				if hex_no.search(instr[instr.index(',')+1:]):
-					return True
+					return entry
 	except: pass
-
 	return False
 
 def check_RI_mem(instr,MOT):
@@ -42,7 +42,6 @@ def check_RI_mem(instr,MOT):
 	INPUT : SINGLE LINE OF INSTR and MOT
 	OUTPUT: RETURNS TRUE IF INSTR IS A Reg-Memory INSTR Otherwise False
 	'''
-
 	list_of_RM_instr = [ entry for entry in MOT if entry['Format']=='02']
 	try:
 		words = instr.split(",")
