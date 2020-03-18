@@ -91,13 +91,8 @@ def check_RI_mem(instr,MOT):
 def to_hex(string):
 	# return string
 	n = int(string, 16)
-	bin = ''
-	while n > 0:
-		bin = str(n % 2) + bin
-		n = n >> 1
-	while len(bin)<6:
-		bin = '0' + bin
-	return bin
+	no = format(n,'08b')
+	return no
 
 
 def assembler_pass1(filename):
@@ -215,7 +210,7 @@ def assembler_pass2(filename):
 				objectcode.write(to_hex(instr["BinaryOp"]) + " " + to_hex(mem["Value"][:-1]) )
 				objectcode.write("\n")
 		except Exception as e:
-			print(e)
+			pass
 		finally:
 			counter+=1
 	objectcode.write(to_hex(end_instr["BinaryOp"]))
